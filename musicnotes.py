@@ -33,4 +33,17 @@ class MusicNote:
             self.music_data[fi[0].upper()] = b
 
     def GetNote(self, filename):
-        return None
+        _, data = wavfile.read(filename)
+        a = data.T[0]
+        b = fft(a)
+
+        minimum = None
+        for note, ftt in self.music_data:
+            corr = 0
+            for i in range(len(b)):
+                corr += abs(b[i] - ftt[i])
+            if corr < minimum or minimum is None:
+                minimum = note
+
+        print("Note is: " + str(note))
+        return note
