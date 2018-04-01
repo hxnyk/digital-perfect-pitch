@@ -54,6 +54,7 @@ class MusicNote:
             print(minimum[1])
             print("=======================================================\n")
             if corr < minimum[1]:
+                print("New fft value: " str(fft2))
                 minimum = [note, fft2]
 
         print("Note is: " + str(note))
