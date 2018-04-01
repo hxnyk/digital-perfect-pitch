@@ -3,6 +3,7 @@
 import os
 import math
 import matplotlib.pyplot as plt
+import numpy
 from scipy.fftpack import fft, ifft
 from scipy.io import wavfile
 from scipy.signal import correlate
@@ -37,13 +38,23 @@ class MusicNote:
         a = data.T[0]
         b = fft(a)
 
-        minimum = None
-        for note, ftt in self.music_data:
-            corr = 0
+        minimum = ["", numpy.finfo(numpy.float).max]
+        for note, fft2 in self.music_data.items():
+            corr = 0.0
             for i in range(len(b)):
-                corr += abs(b[i] - ftt[i])
-            if corr < minimum or minimum is None:
-                minimum = note
+                corr += abs(b[i] - fft2[i])
+
+            print("b: " + str(type(b)))
+            print("fft: " + str(type(fft2)) + "\n")
+
+            print(str(type(corr)) + " " + str(corr))
+            print(corr)
+
+            print(str(type(minimum[1])) + " " + str(minimum[1]))
+            print(minimum[1])
+            print("=======================================================\n")
+            if corr < minimum[1]:
+                minimum = [note, fft2]
 
         print("Note is: " + str(note))
         return note
