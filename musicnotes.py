@@ -40,24 +40,15 @@ class MusicNote:
 
         minimum = ["", numpy.finfo(numpy.float).max]
         for note, fft2 in self.music_data.items():
-            print("THIS IS THE NOTE: " + note)
             corr = 0.0
+            for i in range(len(fft2)):
+                try:
+                    corr += abs(b[i] - fft2[i])
+                except:
+                    break
 
-            for i in range(len(b)):
-                corr += abs(b[i] - fft2[i])
-
-            print("b: " + str(type(b)))
-            print("fft: " + str(type(fft2)) + "\n")
-
-            print(str(type(corr)) + " " + str(corr))
-            print(corr)
-
-            print(str(type(minimum[1])) + " " + str(minimum[1]))
-            print(minimum[1])
-            print("=======================================================\n")
-            if corr < minimum[1]:
-                print("New corr value: " + str(corr))
+            if corr <= minimum[1]:
                 minimum = [note, corr]
 
-        print("Note is: " + str(note))
+        print("Note is: " + minimum[0])
         return note
