@@ -19,9 +19,10 @@ class MusicNote:
 
     def __init__(self):
         """Initalize MusicNote class."""
-        self.TrainData()
+        self.__TrainData()
 
-    def TrainData(self):
+    def __TrainData(self):
+        """Train piano note data."""
         for fi in self.NOTE_FILES:
             _, data = wavfile.read('note_data/' + fi)
 
@@ -34,6 +35,7 @@ class MusicNote:
             self.music_data[fi[0].upper()] = b
 
     def GetNote(self, filename):
+        """Given a file, return what note is played."""
         _, data = wavfile.read(filename)
         a = data.T[0]
         b = fft(a)
@@ -50,5 +52,4 @@ class MusicNote:
             if corr <= minimum[1]:
                 minimum = [note, corr]
 
-        print("Note is: " + minimum[0])
-        return note
+        return minimum[0]
