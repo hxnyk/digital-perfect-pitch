@@ -8,6 +8,8 @@ from scipy.fftpack import fft, ifft
 from scipy.io import wavfile
 from scipy.signal import correlate
 
+from math import log2, pow
+
 
 class MusicNote:
     """
@@ -39,7 +41,7 @@ class MusicNote:
         _, data = wavfile.read(filename)
         a = data.T[0]
         b = fft(a)
-        
+
         minimum = ["", numpy.finfo(numpy.float).max]
         for note, fft2 in self.music_data.items():
             corr = 0.0
@@ -53,3 +55,22 @@ class MusicNote:
                 minimum = [note, corr]
 
         return minimum[0]
+
+    def GetNote2(self, filename):
+        rate, data = wavfile.read(filename)
+        b = numpy.fft.fftfreq(len(data), 1 / rate)
+        b = max(b)
+        return self.pitch(b)
+
+    def pitch(self, freq):
+        A4 = 440
+        C0 = A4 * pow(2, -4.75)
+        name = ["C", "C#", "D", "D#", "E", "F",
+                "F#", "G", "G#", "A", "A#", "B"]
+
+
+        # log2([1,2,3,4]/2)
+        h = round(12 * log2(freq / C0))
+        octave = h // 12
+        n = h % 12
+        return name[n] + str(octave)
