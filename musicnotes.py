@@ -39,7 +39,7 @@ class MusicNote:
         _, data = wavfile.read(filename)
         a = data.T[0]
         b = fft(a)
-
+        
         minimum = ["", numpy.finfo(numpy.float).max]
         for note, fft2 in self.music_data.items():
             corr = 0.0
