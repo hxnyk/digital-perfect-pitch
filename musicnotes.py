@@ -8,7 +8,7 @@ from scipy.fftpack import fft, ifft
 from scipy.io import wavfile
 from scipy.signal import correlate
 
-from math import log2, pow
+from math import log2
 
 
 class MusicNote:
@@ -58,9 +58,28 @@ class MusicNote:
 
     def GetNote2(self, filename):
         rate, data = wavfile.read(filename)
-        b = numpy.fft.fftfreq(len(data), 1 / rate)
-        b = max(b)
-        return self.pitch(b)
+        a = fft(data.T[0])
+
+        #print(a)
+        #print(len(a))
+        '''if a.size % 2 != 0:
+            indexVar  = a.size - 1
+            numpy.delete(a, indexVar)
+            print("LENGTHHHHHHH: " + str(a.size))'''
+        a = numpy.array_split(a,2)[0]
+        maximum = numpy.amax(a)
+        for i, thing in enumerate(a):
+            if thing == maximum:
+                variable = i
+                break
+
+        #variable = a.index(maximum)
+        print(variable)
+        b = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
+        print(b[variable])
+
+        #b = max(b)
+        return self.pitch(b[variable])
 
     def pitch(self, freq):
         A4 = 440
