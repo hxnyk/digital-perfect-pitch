@@ -8,6 +8,8 @@ from scipy.fftpack import fft, ifft
 from scipy.io import wavfile
 from scipy.signal import correlate
 
+from math import log2, pow
+
 
 class MusicNote:
     """
@@ -19,9 +21,10 @@ class MusicNote:
 
     def __init__(self):
         """Initalize MusicNote class."""
-        self.TrainData()
+        self.__TrainData()
 
-    def TrainData(self):
+    def __TrainData(self):
+        """Train piano note data."""
         for fi in self.NOTE_FILES:
             _, data = wavfile.read('note_data/' + fi)
 
@@ -34,30 +37,40 @@ class MusicNote:
             self.music_data[fi[0].upper()] = b
 
     def GetNote(self, filename):
+        """Given a file, return what note is played."""
         _, data = wavfile.read(filename)
         a = data.T[0]
         b = fft(a)
 
         minimum = ["", numpy.finfo(numpy.float).max]
         for note, fft2 in self.music_data.items():
-            print("THIS IS THE NOTE: " + note)
             corr = 0.0
+            for i in range(len(fft2)):
+                try:
+                    corr += abs(b[i] - fft2[i])
+                except:
+                    break
 
-            for i in range(len(b)):
-                corr += abs(b[i] - fft2[i])
-
-            print("b: " + str(type(b)))
-            print("fft: " + str(type(fft2)) + "\n")
-
-            print(str(type(corr)) + " " + str(corr))
-            print(corr)
-
-            print(str(type(minimum[1])) + " " + str(minimum[1]))
-            print(minimum[1])
-            print("=======================================================\n")
-            if corr < minimum[1]:
-                print("New corr value: " + str(corr))
+            if corr <= minimum[1]:
                 minimum = [note, corr]
 
-        print("Note is: " + str(note))
-        return note
+        return minimum[0]
+
+    def GetNote2(self, filename):
+        rate, data = wavfile.read(filename)
+        b = numpy.fft.fftfreq(len(data), 1 / rate)
+        b = max(b)
+        return self.pitch(b)
+
+    def pitch(self, freq):
+        A4 = 440
+        C0 = A4 * pow(2, -4.75)
+        name = ["C", "C#", "D", "D#", "E", "F",
+                "F#", "G", "G#", "A", "A#", "B"]
+
+
+        # log2([1,2,3,4]/2)
+        h = round(12 * log2(freq / C0))
+        octave = h // 12
+        n = h % 12
+        return name[n] + str(octave)
