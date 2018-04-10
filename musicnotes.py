@@ -83,7 +83,7 @@ class MusicNote:
             numpy.delete(a, indexVar)
             print("LENGTHHHHHHH: " + str(a.size))
         '''
-        a = numpy.array_split(a, 2)[0]
+        #a = numpy.array_split(a, 2)[0]
         maximum = numpy.amax(a)
         for i, thing in enumerate(a):
             if thing == maximum:
@@ -91,9 +91,31 @@ class MusicNote:
                 break
 
         #variable = a.index(maximum)
-        print(variable)
+        #print(variable)
         b = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
-        print(b[variable])
+        count = 0
+        start = 0
+        end = 0
+        notes = []
+        for i, thing in enumerate(b):
+            if thing > 0:
+
+                if b[i+1] < 0:
+                    end = i
+                    freq_index = numpy.argmax(a[start:end])
+                    freq = b[freq_index]
+                    notes.append(self.__Pitch(freq))
+
+                    #start = end + 1
+            if thing < 0:
+                if i+1 == len(b):
+                    break
+                if b[i+1] > 0:
+                    start = i+1
+
+
+
+
 
         #b = max(b)
-        return self.__Pitch(b[variable])
+        return notes
