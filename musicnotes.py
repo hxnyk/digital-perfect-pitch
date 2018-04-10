@@ -36,6 +36,24 @@ class MusicNote:
             b = fft(a)
             self.music_data[fi[0].upper()] = b
 
+    def __Pitch(self, freq):
+        """
+        Returns which octave a note is (ie. C4, C5, C6)
+        Using the Stuttgard pitch (C4 @ 440Hz) as baseline
+
+        Referenced: johndcook.com/blog/2016/02/10/musical-pitch-notation/
+        """
+
+        # C near the hearing threshold is known as C0 and is 16Hz
+        C0 = 16  # Hz
+        name = ["C", "C#", "D", "D#", "E", "F",
+                "F#", "G", "G#", "A", "A#", "B"]
+
+        half_steps = round(12 * log2(freq / C0))
+        octave = half_steps // 12  # Floor division
+        num = half_steps % 12
+        return name[num] + str(octave)
+
     def GetNote(self, filename):
         """Given a file, return what note is played."""
         _, data = wavfile.read(filename)
@@ -60,13 +78,12 @@ class MusicNote:
         rate, data = wavfile.read(filename)
         a = fft(data.T[0])
 
-        #print(a)
-        #print(len(a))
         '''if a.size % 2 != 0:
             indexVar  = a.size - 1
             numpy.delete(a, indexVar)
-            print("LENGTHHHHHHH: " + str(a.size))'''
-        a = numpy.array_split(a,2)[0]
+            print("LENGTHHHHHHH: " + str(a.size))
+        '''
+        a = numpy.array_split(a, 2)[0]
         maximum = numpy.amax(a)
         for i, thing in enumerate(a):
             if thing == maximum:
@@ -79,22 +96,4 @@ class MusicNote:
         print(b[variable])
 
         #b = max(b)
-        return self.pitch(b[variable])
-
-    def pitch(self, freq):
-        """
-        Returns which octave a note is (ie. C4, C5, C6)
-        Using the Stuttgard pitch (C4 @ 440Hz) as baseline
-
-        Referenced: johndcook.com/blog/2016/02/10/musical-pitch-notation/
-        """
-        
-        # C near the hearing threshold is known as C0 and is 16Hz
-        C0 = 16 # Hz
-        name = ["C", "C#", "D", "D#", "E", "F",
-                "F#", "G", "G#", "A", "A#", "B"]
-
-        half_steps = round(12 * log2(freq / C0))
-        octave = half_steps // 12 # Floor division
-        num = half_steps % 12
-        return name[num] + str(octave)
+        return self.__Pitch(b[variable])
