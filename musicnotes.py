@@ -82,14 +82,19 @@ class MusicNote:
         return self.pitch(b[variable])
 
     def pitch(self, freq):
-        A4 = 440
-        C0 = A4 * pow(2, -4.75)
+        """
+        Returns which octave a note is (ie. C4, C5, C6)
+        Using the Stuttgard pitch (C4 @ 440Hz) as baseline
+
+        Referenced: johndcook.com/blog/2016/02/10/musical-pitch-notation/
+        """
+        
+        # C near the hearing threshold is known as C0 and is 16Hz
+        C0 = 16 # Hz
         name = ["C", "C#", "D", "D#", "E", "F",
                 "F#", "G", "G#", "A", "A#", "B"]
 
-
-        # log2([1,2,3,4]/2)
-        h = round(12 * log2(freq / C0))
-        octave = h // 12
-        n = h % 12
-        return name[n] + str(octave)
+        half_steps = round(12 * log2(freq / C0))
+        octave = half_steps // 12 # Floor division
+        num = half_steps % 12
+        return name[num] + str(octave)
