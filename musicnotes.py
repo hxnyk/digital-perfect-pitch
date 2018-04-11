@@ -36,6 +36,24 @@ class MusicNote:
             b = fft(a)
             self.music_data[fi[0].upper()] = b
 
+    def __Pitch(self, freq):
+        """
+        Returns which octave a note is (ie. C4, C5, C6)
+        Using the Stuttgard pitch (C4 @ 440Hz) as baseline
+
+        Referenced: johndcook.com/blog/2016/02/10/musical-pitch-notation/
+        """
+
+        # C near the hearing threshold is known as C0 and is 16Hz
+        C0 = 16  # Hz
+        name = ["C", "C#", "D", "D#", "E", "F",
+                "F#", "G", "G#", "A", "A#", "B"]
+
+        half_steps = round(12 * log2(freq / C0))
+        octave = half_steps // 12  # Floor division
+        num = half_steps % 12
+        return name[num] + str(octave)
+
     def GetNote(self, filename):
         """Given a file, return what note is played."""
         _, data = wavfile.read(filename)
@@ -60,13 +78,12 @@ class MusicNote:
         rate, data = wavfile.read(filename)
         a = fft(data.T[0])
 
-        #print(a)
-        #print(len(a))
         '''if a.size % 2 != 0:
             indexVar  = a.size - 1
             numpy.delete(a, indexVar)
-            print("LENGTHHHHHHH: " + str(a.size))'''
-        a = numpy.array_split(a,2)[0]
+            print("LENGTHHHHHHH: " + str(a.size))
+        '''
+        #a = numpy.array_split(a, 2)[0]
         maximum = numpy.amax(a)
         for i, thing in enumerate(a):
             if thing == maximum:
@@ -74,22 +91,31 @@ class MusicNote:
                 break
 
         #variable = a.index(maximum)
-        print(variable)
+        #print(variable)
         b = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
-        print(b[variable])
+        count = 0
+        start = 0
+        end = 0
+        notes = []
+        for i, thing in enumerate(b):
+            if thing > 0:
+
+                if b[i+1] < 0:
+                    end = i
+                    freq_index = numpy.argmax(a[start:end])
+                    freq = b[freq_index]
+                    notes.append(self.__Pitch(freq))
+
+                    #start = end + 1
+            if thing < 0:
+                if i+1 == len(b):
+                    break
+                if b[i+1] > 0:
+                    start = i+1
+
+
+
+
 
         #b = max(b)
-        return self.pitch(b[variable])
-
-    def pitch(self, freq):
-        A4 = 440
-        C0 = A4 * pow(2, -4.75)
-        name = ["C", "C#", "D", "D#", "E", "F",
-                "F#", "G", "G#", "A", "A#", "B"]
-
-
-        # log2([1,2,3,4]/2)
-        h = round(12 * log2(freq / C0))
-        octave = h // 12
-        n = h % 12
-        return name[n] + str(octave)
+        return notes
