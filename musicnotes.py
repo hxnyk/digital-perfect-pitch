@@ -2,8 +2,9 @@
 
 import os
 import math
-import matplotlib.pyplot as plt
 import numpy
+import matplotlib
+import matplotlib.pyplot as plt
 from scipy.fftpack import fft, ifft
 from scipy.io import wavfile
 from scipy.signal import correlate
@@ -97,6 +98,7 @@ class MusicNote:
         start = 0
         end = 0
         notes = []
+        
         for i, thing in enumerate(b):
             if thing > 0:
 
@@ -113,9 +115,23 @@ class MusicNote:
                 if b[i+1] > 0:
                     start = i+1
 
-
-
-
-
         #b = max(b)
         return notes
+    
+    def hon(self, filename):
+        rate, data = wavfile.read(filename)
+        track = data.T[0]
+        fft_track = fft(track)
+
+        test = matplotlib.mlab.specgram(fft_track, NFFT=1024*6)
+        print(type(test[0]))
+        print(test[0].shape)
+        print(len(test))
+        # split this up
+
+        # get max intensity
+
+
+        plt.plot(test[0])
+        plt.show()
+
