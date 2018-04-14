@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from __future__ import  division
 
 import os
 import math
@@ -8,6 +9,12 @@ import matplotlib.pyplot as plt
 from scipy.fftpack import fft, ifft
 from scipy.io import wavfile
 from scipy.signal import correlate
+from thinkdsp import Spectrogram
+from thinkdsp import Spectrum
+from thinkdsp import Wave
+from thinkdsp import _SpectrumParent
+
+import thinkdsp
 
 from math import log2
 
@@ -177,6 +184,7 @@ class MusicNote:
         plt.show()
 
     def getMultipleNotes(self, filename): 
+        '''
         rate, data = wavfile.read(filename)
         track = data.T[0]
         tracks = numpy.array_split(track, 6)
@@ -193,3 +201,64 @@ class MusicNote:
         #plt.show() 
         print (input_freq)  
         print (self.__Pitch(input_freq))
+        '''
+        piano = thinkdsp.read_wave(filename)
+        print(piano)
+        interval = (2.983401360544218 / 6.0)  
+        print (interval)
+
+
+        spectrogram = piano.make_spectrogram(seg_length=44810)
+
+        #C = 130.81
+        start = 0.0
+        duration = interval
+        segment = piano.segment(start, duration)
+        spectrum = segment.make_spectrum()
+        spectrum.plot()
+        #print(spectrum.peaks()[:1])
+        print(self.__Pitch(spectrum.peaks()[:1][0][1]))
+
+        
+        #C = 130.81
+        start = start + duration
+        duration = interval
+        segment = piano.segment(start, duration)
+        spectrum = segment.make_spectrum()
+        #print(spectrum.peaks()[:1])
+        print(self.__Pitch(spectrum.peaks()[:1][0][1]))
+        
+       
+        #D = 146.83
+        start = start + duration
+        duration = interval
+        segment = piano.segment(start, duration)
+        spectrum = segment.make_spectrum()
+        #print(spectrum.peaks()[:1])
+        print(self.__Pitch(spectrum.peaks()[:1][0][1]))
+
+        #C = 130.81
+        start = start + duration
+        duration = interval
+        segment = piano.segment(start, duration)
+        spectrum = segment.make_spectrum()
+        #print(spectrum.peaks()[:1])
+        print(self.__Pitch(spectrum.peaks()[:1][0][1]))
+
+        #F = 174.61
+        start = start + duration
+        duration = interval
+        segment = piano.segment(start, duration)
+        spectrum = segment.make_spectrum()
+        #print(spectrum.peaks()[:1])
+        print(self.__Pitch(spectrum.peaks()[:1][0][1]))
+
+        #E = 164.81	
+        start = start + duration
+        duration = interval
+        segment = piano.segment(start, duration)
+        spectrum = segment.make_spectrum()
+        #print(spectrum.peaks()[:1])
+        print(self.__Pitch(spectrum.peaks()[:1][0][1]))
+
+       

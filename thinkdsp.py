@@ -26,11 +26,13 @@ from wave import open as open_wave
 
 import matplotlib.pyplot as pyplot
 
+'''
 try:
     from IPython.display import Audio
 except:
     warnings.warn("Can't import Audio from IPython.display; "
                   "Wave.make_audio() will not work.")
+'''                  
 
 PI2 = math.pi * 2
 
