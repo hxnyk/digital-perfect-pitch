@@ -118,6 +118,47 @@ class MusicNote:
         #b = max(b)
         return notes
     
+    def GetNote3(self, filename):
+        """Given a file, return what note is played."""
+        rate, data = wavfile.read(filename)
+        test_track = data.T[0]
+        test_fft = fft(test_track)
+        split_fft = numpy.array_split(test_fft, 2)[0]
+        maximum_index = numpy.argmax(split_fft)
+        #create frequency array (the x axis of the fourier transform)
+        fft_freqs = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
+        #find the frequency at the corresponding max y value (intensity)
+        input_freq = fft_freqs[maximum_index]
+
+        #[note, freq, higher/lower octave, octave difference from training octave]
+        minimum = ["", math.inf, "", ""]
+        lower_octave = "no"
+        higher_octave = "no"
+        for note, training_freq in self.music_data.items():
+            if input_freq >= training_freq - 10.0 and input_freq <= training_freq + 10.0:
+                minimum = [note, input_freq, "different", 0]
+                break; 
+            elif input_freq < training_freq: 
+                #7 octaves on a piano
+                for multiplier in range(1, 8): 
+                    new_training_freq = training_freq * (1 / (2 * multiplier))
+                    if input_freq >= new_training_freq - 10.0 and input_freq <= new_training_freq + 10.0 : 
+                        lower_octave = "yes"
+                        minimum = [note, input_freq, "lower", multiplier]
+                        break; 
+
+            if lower_octave == "yes": 
+                break; 
+
+            else: 
+                for multiplier in range(1,8): 
+                    new_training_freq = training_freq * (2 * multiplier)
+                    if input_freq >= new_training_freq - 10.0 and input_freq <= new_training_freq + 10.0: 
+                        higher_octave == "yes"
+                        minimum = [note, input_freq, "higher", multiplier]
+
+        return minimum
+
     def hon(self, filename):
         rate, data = wavfile.read(filename)
         track = data.T[0]
@@ -135,3 +176,20 @@ class MusicNote:
         plt.plot(test[0])
         plt.show()
 
+    def getMultipleNotes(self, filename): 
+        rate, data = wavfile.read(filename)
+        track = data.T[0]
+        tracks = numpy.array_split(track, 6)
+        test_track = fft(tracks[0])
+
+        test_fft = fft(test_track)
+        test_fft = numpy.array_split(test_fft, 2)[0]
+        maximum_index = numpy.argmax(test_fft)
+        #create frequency array (the x axis of the fourier transform)
+        fft_freqs = numpy.fft.fftfreq(len(tracks[0]), 1 / rate)
+        #find the frequency at the corresponding max y value (intensity)
+        input_freq = fft_freqs[maximum_index] 
+        #plt.plot(test_fft)
+        #plt.show() 
+        print (input_freq)  
+        print (self.__Pitch(input_freq))
