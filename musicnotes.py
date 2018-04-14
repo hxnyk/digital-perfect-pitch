@@ -196,6 +196,7 @@ class MusicNote:
     def getMultipleNotes(self, filename): 
         numNotes = 6
         detected_notes = []
+        parson_code = ""
         piano = thinkdsp.read_wave(filename)
         interval = self.getDuration(filename) / float(numNotes)
 
@@ -207,10 +208,19 @@ class MusicNote:
             spectrum = segment.make_spectrum()
             freq = spectrum.peaks()[:1][0][1]
             note = self.__Pitch(freq)
-            detected_notes.append(note)
+            note_freq = (note, freq)
+            detected_notes.append(note_freq)
+
+            if i > 0: 
+                if freq > detected_notes[i - 1][1]: 
+                    parson_code += 'U'
+                elif freq < detected_notes[i - 1][1]: 
+                    parson_code += 'D'
+                else: 
+                    parson_code += 'R'
 
             start = start + duration
             duration = interval
-
-        return detected_notes
+        
+        return (detected_notes, parson_code)
         

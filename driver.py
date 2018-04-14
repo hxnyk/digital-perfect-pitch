@@ -10,7 +10,8 @@ def main():
     
     print("Playing 6 notes, [C1, C1, D1, C1, F1, E1]")
     note = tester.getMultipleNotes("test_data/hbd.wav")
-    print(note)
+    print(note[0])
+    print(note[1])
 
     '''
     print("Playing 2 notes, [C1, A1]")
