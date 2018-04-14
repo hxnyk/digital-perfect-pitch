@@ -15,6 +15,7 @@ from thinkdsp import Wave
 from thinkdsp import _SpectrumParent
 import wave
 import contextlib
+import peakutils
 
 import thinkdsp
 
@@ -194,9 +195,15 @@ class MusicNote:
             return duration    
 
     def getMultipleNotes(self, filename): 
-        numNotes = 6
+
         detected_notes = []
         parson_code = ""
+
+        rate, data = wavfile.read(filename)
+        test_track = data.T[0]
+        fft_track = fft(test_track)
+
+        numNotes = len(peakutils.indexes(fft_track, thres=0.02/max(fft_track), min_dist=rate/2))
         piano = thinkdsp.read_wave(filename)
         interval = self.getDuration(filename) / float(numNotes)
 
