@@ -28,7 +28,8 @@ class MusicNote:
         """Train piano note data."""
         for fi in self.NOTE_FILES:
             rate, data = wavfile.read('note_data/' + fi)
-
+            non_norm_freqs = []
+            notes = []
             # .wav is a two channel audio file
             # 0 is the first track
             first_track = data.T[0]
@@ -42,7 +43,12 @@ class MusicNote:
             fft_freqs = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
             #find the frequency at the corresponding max y value (intensity)
             freq = fft_freqs[maximum_index]
-            self.music_data[fi[0].upper()] = freq
+            norm_freqs.append(freq)
+            notes.append(fi[0].upper())
+
+        norm_freqs = numpy.linalg.norm(non_norm_freqs)
+        for i, freqs in enumerate(non_norm_freqs): 
+            self.music_data[notes[i]] = freqs
 
     #function not working right now - will probably delete
     '''
@@ -161,3 +167,31 @@ class MusicNote:
 
         #b = max(b)
         return notes
+
+def mutipleNotes(self, filename): 
+    rate, data = wavfile.read(filename)
+    separate_notes = numpy.array_split(data, 6)
+    test_track = fft(separate_notes[0])
+
+    test_fft = fft(test_track)
+    split_fft = numpy.array_split(test_fft, 2)[0]
+    maximum_index = numpy.argmax(split_fft)
+    #create frequency array (the x axis of the fourier transform)
+    fft_freqs = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
+    #find the frequency at the corresponding max y value (intensity)
+    input_freq = fft_freqs[maximum_index]
+
+    print (input_freq)
+
+
+    '''
+    test = matplotlib.mlab.specgram(fft_track, NFFT=1024 * 6)
+    spect = test[0]
+    freqs = test[1]
+    time_spectrum = test[2]
+
+    num = 0
+    spectmax = numpy.argmax(spect)
+    for i, item in enumerate(spect):
+        if spectmax in item:
+            num = i'''
