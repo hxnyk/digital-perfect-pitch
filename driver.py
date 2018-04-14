@@ -16,7 +16,7 @@ def main():
     for fi in os.listdir("note_data/"):
         note = tester.GetNote("note_data/" + fi)
         print(note)
-    """
+    
     print("Playing 'b' note")
     note = tester.GetNote("test_data/b1.wav")
     print_output(note)
@@ -32,6 +32,16 @@ def main():
     print("Playing 'a' note")
     note = tester.GetNote("test_data/a1.wav")
     print_output(note)
+    
+    print("Playing 'c' note")
+    note = tester.GetNote("test_data/c1.wav")
+    print_output(note)    
+
+    print("Playing 'd' note")
+    note = tester.GetNote("test_data/d1.wav")
+    print_output(note)   
+    """
+     
 
 if __name__ == "__main__":
     main()

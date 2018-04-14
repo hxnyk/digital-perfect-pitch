@@ -43,12 +43,14 @@ class MusicNote:
             fft_freqs = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
             #find the frequency at the corresponding max y value (intensity)
             freq = fft_freqs[maximum_index]
-            norm_freqs.append(freq)
-            notes.append(fi[0].upper())
+            self.music_data[fi[0].upper()] = freq
+            #norm_freqs.append(freq)
+            #notes.append(fi[0].upper())
 
-        norm_freqs = numpy.linalg.norm(non_norm_freqs)
-        for i, freqs in enumerate(non_norm_freqs): 
-            self.music_data[notes[i]] = freqs
+        
+        #norm_freqs = numpy.linalg.norm(non_norm_freqs)
+        #for i, freqs in enumerate(non_norm_freqs): 
+            #self.music_data[notes[i]] = freqs
 
     #function not working right now - will probably delete
     '''
@@ -92,20 +94,23 @@ class MusicNote:
         fft_freqs = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
         #find the frequency at the corresponding max y value (intensity)
         input_freq = fft_freqs[maximum_index]
-
+        print (self.music_data['D'])
         #[note, freq, higher/lower octave, octave difference from training octave]
-        minimum = ["", math.inf, "", ""]
+        minimum = ["", math.inf, "", 0]
         lower_octave = "no"
         higher_octave = "no"
+        #TODO figure out what actual notes are in our training data
+        print (input_freq)
+        #Playing around with range will give different accuracies 
         for note, training_freq in self.music_data.items():
-            if input_freq >= training_freq - 10.0 and input_freq <= training_freq + 10.0:
+            if input_freq >= training_freq - 7.0 and input_freq <= training_freq + 7.0:
                 minimum = [note, input_freq, "different", 0]
                 break; 
             elif input_freq < training_freq: 
                 #7 octaves on a piano
                 for multiplier in range(1, 8): 
                     new_training_freq = training_freq * (1 / (2 * multiplier))
-                    if input_freq >= new_training_freq - 10.0 and input_freq <= new_training_freq + 10.0 : 
+                    if input_freq >= new_training_freq - 7.0 and input_freq <= new_training_freq + 7.0 : 
                         lower_octave = "yes"
                         minimum = [note, input_freq, "lower", multiplier]
                         break; 
@@ -116,7 +121,7 @@ class MusicNote:
             else: 
                 for multiplier in range(1,8): 
                     new_training_freq = training_freq * (2 * multiplier)
-                    if input_freq >= new_training_freq - 10.0 and input_freq <= new_training_freq + 10.0: 
+                    if input_freq >= new_training_freq - 7.0 and input_freq <= new_training_freq + 7.0: 
                         higher_octave == "yes"
                         minimum = [note, input_freq, "higher", multiplier]
 
@@ -182,6 +187,7 @@ def mutipleNotes(self, filename):
     input_freq = fft_freqs[maximum_index]
 
     print (input_freq)
+    print (self.__Pitch(input_freq))
 
 
     '''
