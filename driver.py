@@ -2,23 +2,14 @@
 
 import os
 from musicnotes import MusicNote
-import wave
-import contextlib
 
-def getDuration(fname):
 
-    with contextlib.closing(wave.open(fname,'r')) as f:
-        frames = f.getnframes()
-        rate = f.getframerate()
-        duration = frames / float(rate)
-        print(duration)
 
 def main():
     tester = MusicNote()
     
     print("Playing 6 notes, [C1, C1, D1, C1, F1, E1]")
     note = tester.getMultipleNotes("test_data/hbd.wav")
-    print (getDuration("test_data/hbd.wav"))
     print(note)
 
     '''
