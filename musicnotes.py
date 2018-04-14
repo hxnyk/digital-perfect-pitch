@@ -4,10 +4,13 @@ import os
 import math
 import numpy
 import matplotlib
+import scipy
+import wave
 import matplotlib.pyplot as plt
-from scipy.fftpack import fft, ifft
+from scipy.fftpack import fft, ifft, fftshift
 from scipy.io import wavfile
 from scipy.signal import correlate
+import peakutils
 
 from math import log2
 
@@ -92,17 +95,17 @@ class MusicNote:
                 break
 
         #variable = a.index(maximum)
-        #print(variable)
+        # print(variable)
         b = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
         count = 0
         start = 0
         end = 0
         notes = []
-        
+
         for i, thing in enumerate(b):
             if thing > 0:
 
-                if b[i+1] < 0:
+                if b[i + 1] < 0:
                     end = i
                     freq_index = numpy.argmax(a[start:end])
                     freq = b[freq_index]
@@ -110,28 +113,59 @@ class MusicNote:
 
                     #start = end + 1
             if thing < 0:
-                if i+1 == len(b):
+                if i + 1 == len(b):
                     break
-                if b[i+1] > 0:
-                    start = i+1
+                if b[i + 1] > 0:
+                    start = i + 1
 
         #b = max(b)
         return notes
-    
+
     def hon(self, filename):
         rate, data = wavfile.read(filename)
-        track = data.T[0]
-        fft_track = fft(track)
+        fft_track = (fft(data.T[0]))
+        f = numpy.linspace(0, rate/2, len(fft_track))
 
-        test = matplotlib.mlab.specgram(fft_track, NFFT=1024*6)
-        print(type(test[0]))
-        print(test[0].shape)
-        print(len(test))
-        # split this up
+        test = matplotlib.mlab.specgram(fft_track, NFFT=1024 * 6, Fs=rate)
+        spect = test[0]
+        freqs = test[1]
+        time_spectrum = test[2]
 
-        # get max intensity
+        """
+        make array 
+        """
+        # plt.plot(f, fft_track)
+        indexes = peakutils.indexes(fft_track, thres=0.02/max(fft_track), min_dist=rate/2)
+        print("-------------HON-----------------")
+        print(indexes)
+        print(len(indexes))
+        #plt.plot(f, fft_track) # peaks on x-axis is frequenciews i care about
+        #plt.plot(spect) # peaks on x-axis is frequencies i care about
+        #plt.show()
 
-
-        plt.plot(test[0])
+        plt.stem(spect)
         plt.show()
 
+        pitches = []
+        for idx in indexes:
+            pitches.append(self.__Pitch(idx))
+        print(pitches)
+
+        everything = []
+
+        for item in spect.tolist():
+            for val in item:
+                everything.append(val)
+
+        #indexes = peakutils.indexes(everything, thres=0.02/max(everything), min_dist=100)
+        # print(indexes)
+
+        num = -1
+        spectmax = numpy.argmax(spect)
+        for i, item in enumerate(spect):
+            if spectmax in item:
+                num = i
+
+        print(num)
+        print(freqs[num])
+        print(self.__Pitch(freqs[num]))
