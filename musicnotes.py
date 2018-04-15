@@ -66,7 +66,7 @@ class MusicNote:
         return name[num] + str(octave)
 
     def GetNote(self, filename):
-        """Given a file, return what note is played."""
+        """ DEPRECATED """
         _, data = wavfile.read(filename)
         a = data.T[0]
         b = fft(a)
@@ -86,6 +86,7 @@ class MusicNote:
         return minimum[0]
 
     def GetNote2(self, filename):
+        """ DEPRECATED """
         rate, data = wavfile.read(filename)
         a = fft(data.T[0])
 
