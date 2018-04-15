@@ -212,6 +212,7 @@ class MusicNote:
                                             coll, query, keywords, pitch, rhythm, items, offset, cats)
 
             print(output["items"][0])
+            print("\n\n")
             self.playMIDI(output["items"][0]["url"])
             return output["items"]
 
@@ -237,7 +238,11 @@ class MusicNote:
     def playMIDI(self, url):
         """ Given a MIDI link, will download and play """
         midi = None
-        url = "http://www.musipedia.org/edit.html?&L=0&no_cache=1&tx_detedit_pi1%5Bmode%5D=d&tx_detedit_pi1%5Btid%5D=037a595e6f4f0576a9efe43154d71c18"
+        #url = url.split("/")
+        #url = "http://www.musipedia.org/edit.html?&L=0&no_cache=1&tx_detedit_pi1%5Bmode%5D=d&tx_detedit_pi1%5Btid%5D=" + url[-1]
+        print(url)
+        #print(url[-1])
+        # url = "http://www.musipedia.org/edit.html?&L=0&no_cache=1&tx_detedit_pi1%5Bmode%5D=d&tx_detedit_pi1%5Btid%5D=037a595e6f4f0576a9efe43154d71c18"
         req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
 
         links = set()
@@ -245,6 +250,21 @@ class MusicNote:
         soup = BeautifulSoup(data,
                              "html.parser", from_encoding="iso-8859-1")
         links.update(soup.findAll("a", href=True))
+        for item in links:
+            try:
+                test = str(item)
+                if "Details" in test:
+                    link = "http://www.musipedia.org/" + item.get("href")
+                    link = link.replace("?&amp;", "&")
+                    req2 = Request(link, headers={'User-Agent': 'Mozilla/5.0'})
+                    data2 = urlopen(req2).read()
+                    soup = BeautifulSoup(data2,
+                                        "html.parser", from_encoding="iso-8859-1")
+                    links = set(soup.findAll("a", href=True))
+                    break
+            except:
+                continue
+                
         for item in links:
             try:
                 test = str(item)
@@ -268,4 +288,6 @@ class MusicNote:
             # optional volume 0 to 1.0
             pygame.mixer.music.set_volume(0.8)
             self.play_music(file_name)
+        else:
+            print("No midi available!\n\n")
                         
