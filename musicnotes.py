@@ -15,7 +15,7 @@ from thinkdsp import Wave
 from thinkdsp import _SpectrumParent
 import wave
 import contextlib
-import peakutils
+#import peakutils
 
 import thinkdsp
 
@@ -29,7 +29,7 @@ class MusicNote:
     """
     NOTE_FILES = os.listdir("note_data/")
     music_data = {}
-
+    note_values = {"C": 1, "D": 2, "E": 3, "F": 4, "G": 5, "A": 6, "B": 7}
     def __init__(self):
         """Initalize MusicNote class."""
         self.__TrainData()
@@ -37,15 +37,24 @@ class MusicNote:
     def __TrainData(self):
         """Train piano note data."""
         for fi in self.NOTE_FILES:
-            _, data = wavfile.read('note_data/' + fi)
-
+            rate, data = wavfile.read('note_data/' + fi)
+            non_norm_freqs = []
+            notes = []
             # .wav is a two channel audio file
             # 0 is the first track
-            a = data.T[0]
-
+            first_track = data.T[0]
             # Converts single channel domain to frequency domain
-            b = fft(a)
-            self.music_data[fi[0].upper()] = b
+            fft_arr= fft(first_track)
+            #get first half of fft - corresponds to positive frequencies. Ignores negative ones 
+            split_fft = numpy.array_split(fft_arr, 2)[0]
+            #get index of maximum intensity
+            maximum_index = numpy.argmax(split_fft)
+            #create frequency array (the x axis of the fourier transform)
+            fft_freqs = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
+            #find the frequency at the corresponding max y value (intensity)
+            freq = fft_freqs[maximum_index]
+            self.music_data[fi[0].upper()] = freq
+        print (self.music_data)
 
     def __Pitch(self, freq):
         """
@@ -65,71 +74,29 @@ class MusicNote:
         num = half_steps % 12
         return name[num] + str(octave)
 
-    def GetNote(self, filename):
-        """ DEPRECATED """
-        _, data = wavfile.read(filename)
-        a = data.T[0]
-        b = fft(a)
+    def IsAccurate(self, note_data): 
+        calc_note = note_data[0] + str(note_data[4])
+        acc_note = note_data[5]
+        if calc_note == acc_note: 
+            return "yes"
+        else: 
+            return "no"
 
-        minimum = ["", numpy.finfo(numpy.float).max]
-        for note, fft2 in self.music_data.items():
-            corr = 0.0
-            for i in range(len(fft2)):
-                try:
-                    corr += abs(b[i] - fft2[i])
-                except:
-                    break
+    def CalculateOctave(self, note, difference): 
+        if note == 'A' or note == 'B': 
+            calculated_octave = 4 + difference
+        elif note == 'C' or note == 'D' or note == 'F' or note == 'G': 
+            calculated_octave = 5 + difference
+        else: 
+            calculated_octave = 6 + difference
 
-            if corr <= minimum[1]:
-                minimum = [note, corr]
+        return calculated_octave  
 
-        return minimum[0]
-
-    def GetNote2(self, filename):
-        """ DEPRECATED """
-        rate, data = wavfile.read(filename)
-        a = fft(data.T[0])
-
-        '''if a.size % 2 != 0:
-            indexVar  = a.size - 1
-            numpy.delete(a, indexVar)
-            print("LENGTHHHHHHH: " + str(a.size))
-        '''
-        #a = numpy.array_split(a, 2)[0]
-        maximum = numpy.amax(a)
-        for i, thing in enumerate(a):
-            if thing == maximum:
-                variable = i
-                break
-
-        #variable = a.index(maximum)
-        #print(variable)
-        b = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
-        count = 0
-        start = 0
-        end = 0
-        notes = []
-        
-        for i, thing in enumerate(b):
-            if thing > 0:
-
-                if b[i+1] < 0:
-                    end = i
-                    freq_index = numpy.argmax(a[start:end])
-                    freq = b[freq_index]
-                    notes.append(self.__Pitch(freq))
-
-                    #start = end + 1
-            if thing < 0:
-                if i+1 == len(b):
-                    break
-                if b[i+1] > 0:
-                    start = i+1
-
-        #b = max(b)
-        return notes
+    def GetAccNote(self, freq):
+        accurate_note = self.__Pitch(freq)
+        return accurate_note
     
-    def GetNote3(self, filename):
+    def GetNote(self, filename):
         """Given a file, return what note is played."""
         rate, data = wavfile.read(filename)
         test_track = data.T[0]
@@ -141,13 +108,16 @@ class MusicNote:
         #find the frequency at the corresponding max y value (intensity)
         input_freq = fft_freqs[maximum_index]
 
-        #[note, freq, higher/lower octave, octave difference from training octave]
-        minimum = ["", math.inf, "", ""]
+        #[note, freq, higher/lower octave, octave difference from training octave, calculated octave, accurate note]
+        minimum = ["", math.inf, "", "", "", 0]
         lower_octave = "no"
         higher_octave = "no"
+        accuracy_count = 0
         for note, training_freq in self.music_data.items():
-            if input_freq >= training_freq - 10.0 and input_freq <= training_freq + 10.0:
-                minimum = [note, input_freq, "different", 0]
+            acc_note = self.GetAccNote(input_freq)
+            if input_freq >= training_freq - 10.0 and input_freq <= training_freq + 10.0: 
+                calc_octave = self.CalculateOctave(note, 0)  
+                minimum = [note, input_freq, "different", 0, calc_octave, acc_note]
                 break; 
             elif input_freq < training_freq: 
                 #7 octaves on a piano
@@ -155,7 +125,8 @@ class MusicNote:
                     new_training_freq = training_freq * (1 / (2 * multiplier))
                     if input_freq >= new_training_freq - 10.0 and input_freq <= new_training_freq + 10.0 : 
                         lower_octave = "yes"
-                        minimum = [note, input_freq, "lower", multiplier]
+                        calc_octave = self.CalculateOctave(note, (-1 * multiplier))
+                        minimum = [note, input_freq, "lower", multiplier, calc_octave, acc_note]
                         break; 
 
             if lower_octave == "yes": 
@@ -166,26 +137,10 @@ class MusicNote:
                     new_training_freq = training_freq * (2 * multiplier)
                     if input_freq >= new_training_freq - 10.0 and input_freq <= new_training_freq + 10.0: 
                         higher_octave == "yes"
-                        minimum = [note, input_freq, "higher", multiplier]
+                        calc_octave = self.CalculateOctave(note, multiplier)
+                        minimum = [note, input_freq, "higher", multiplier, calc_octave, acc_note]
 
         return minimum
-
-    def hon(self, filename):
-        rate, data = wavfile.read(filename)
-        track = data.T[0]
-        fft_track = fft(track)
-
-        test = matplotlib.mlab.specgram(fft_track, NFFT=1024*6)
-        print(type(test[0]))
-        print(test[0].shape)
-        print(len(test))
-        # split this up
-
-        # get max intensity
-
-
-        plt.plot(test[0])
-        plt.show()
 
     def getDuration(self, fname):
         
@@ -204,7 +159,8 @@ class MusicNote:
         test_track = data.T[0]
         fft_track = fft(test_track)
 
-        numNotes = len(peakutils.indexes(fft_track, thres=0.02/max(fft_track), min_dist=rate/2))
+        #numNotes = len(peakutils.indexes(fft_track, thres=0.02/max(fft_track), min_dist=rate/2))
+        numNotes = 9
         piano = thinkdsp.read_wave(filename)
         interval = self.getDuration(filename) / float(numNotes)
 
@@ -220,9 +176,9 @@ class MusicNote:
             detected_notes.append(note_freq)
 
             if i > 0: 
-                if freq > detected_notes[i - 1][1]: 
+                if self.note_values[note[0]] > self.note_values[detected_notes[i - 1][0][0]]: 
                     parson_code += 'U'
-                elif freq < detected_notes[i - 1][1]: 
+                elif self.note_values[note[0]] < self.note_values[detected_notes[i - 1][0][0]]: 
                     parson_code += 'D'
                 else: 
                     parson_code += 'R'
