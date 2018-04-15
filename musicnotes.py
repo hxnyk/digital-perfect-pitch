@@ -2,6 +2,7 @@
 from __future__ import  division
 
 import os
+import json
 import math
 import numpy
 import matplotlib
@@ -15,7 +16,11 @@ from thinkdsp import Wave
 from thinkdsp import _SpectrumParent
 import wave
 import contextlib
-#import peakutils
+import zeep
+from urllib.request import Request, urlopen
+from bs4 import BeautifulSoup
+import pygame
+
 
 import thinkdsp
 
@@ -28,8 +33,10 @@ class MusicNote:
     given an audio file.
     """
     NOTE_FILES = os.listdir("note_data/")
+    NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
     music_data = {}
     note_values = {"C": 1, "D": 2, "E": 3, "F": 4, "G": 5, "A": 6, "B": 7}
+
     def __init__(self):
         """Initalize MusicNote class."""
         self.__TrainData()
@@ -188,3 +195,77 @@ class MusicNote:
         
         return (detected_notes, parson_code)
         
+    def searchContours(self, parson_code):
+        coll = "Musipedia"
+        query = parson_code
+        keywords = ""
+        pitch = 0.6
+        rhythm = 0.4
+        items = 5
+        offset = 0
+        cats = ""
+        wsdl = 'https://www.musipedia.org/soap/index.php?wsdl'
+        client1 = zeep.Client(wsdl=wsdl)
+        with open('config.json', 'r') as config:
+            data = json.load(config)
+            output = client1.service.search(data["username"], data["password"],
+                                            coll, query, keywords, pitch, rhythm, items, offset, cats)
+
+            print(output["items"][0])
+            self.playMIDI(output["items"][0]["url"])
+            return output["items"]
+
+    def play_music(self, music_file):
+        """
+        stream music with mixer.music module in blocking manner
+        this will stream the sound from disk while playing
+
+        Referenced: https://www.daniweb.com/programming/software-development/code/216976/play-a-midi-music-file-using-pygame
+        """
+        clock = pygame.time.Clock()
+        try:
+            pygame.mixer.music.load(music_file)
+            print("Music file %s loaded!" % music_file)
+        except pygame.error:
+            print("File %s not found! (%s)" % (music_file, pygame.get_error()))
+            return
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            # check if playback has finished
+            clock.tick(15)
+
+    def playMIDI(self, url):
+        """ Given a MIDI link, will download and play """
+        midi = None
+        url = "http://www.musipedia.org/edit.html?&L=0&no_cache=1&tx_detedit_pi1%5Bmode%5D=d&tx_detedit_pi1%5Btid%5D=037a595e6f4f0576a9efe43154d71c18"
+        req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+
+        links = set()
+        data = urlopen(req).read()
+        soup = BeautifulSoup(data,
+                             "html.parser", from_encoding="iso-8859-1")
+        links.update(soup.findAll("a", href=True))
+        for item in links:
+            try:
+                test = str(item)
+                if "mid" in test:
+                    midi = "http://www.musipedia.org" + item.get("href")
+            except:
+                continue
+        
+        if midi:
+            file_name = "playfi.mid"
+            req = Request(midi, headers={'User-Agent': 'Mozilla/5.0'})
+            rsp = urlopen(req)
+            with open(file_name,'wb') as f:
+                f.write(rsp.read())
+            
+            freq = 44100    # audio CD quality
+            bitsize = -16   # unsigned 16 bit
+            channels = 2    # 1 is mono, 2 is stereo
+            buffer = 1024    # number of samples
+            pygame.mixer.init(freq, bitsize, channels, buffer)
+            # optional volume 0 to 1.0
+            pygame.mixer.music.set_volume(0.8)
+            self.play_music(file_name)
+                        

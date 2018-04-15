@@ -25,6 +25,9 @@ def main():
     note = tester.getMultipleNotes("melodies/twinkletwinkle.wav")
     print(note[0])
     print(note[1])
+    
+    contour = note[1]
+    tester.searchContours(contour)
 
     '''
     print("Playing 2 notes, [C1, A1]")
