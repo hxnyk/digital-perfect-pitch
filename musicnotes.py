@@ -34,18 +34,27 @@ class MusicNote:
         """Initalize MusicNote class."""
         self.__TrainData()
 
-    def __TrainData(self):
+   def __TrainData(self):
         """Train piano note data."""
         for fi in self.NOTE_FILES:
-            _, data = wavfile.read('note_data/' + fi)
-
+            rate, data = wavfile.read('note_data/' + fi)
+            non_norm_freqs = []
+            notes = []
             # .wav is a two channel audio file
             # 0 is the first track
-            a = data.T[0]
-
+            first_track = data.T[0]
             # Converts single channel domain to frequency domain
-            b = fft(a)
-            self.music_data[fi[0].upper()] = b
+            fft_arr= fft(first_track)
+            #get first half of fft - corresponds to positive frequencies. Ignores negative ones 
+            split_fft = numpy.array_split(fft_arr, 2)[0]
+            #get index of maximum intensity
+            maximum_index = numpy.argmax(split_fft)
+            #create frequency array (the x axis of the fourier transform)
+            fft_freqs = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
+            #find the frequency at the corresponding max y value (intensity)
+            freq = fft_freqs[maximum_index]
+            self.music_data[fi[0].upper()] = freq
+        print (self.music_data)
 
     def __Pitch(self, freq):
         """
