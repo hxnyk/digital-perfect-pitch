@@ -238,11 +238,6 @@ class MusicNote:
     def playMIDI(self, url):
         """ Given a MIDI link, will download and play """
         midi = None
-        #url = url.split("/")
-        #url = "http://www.musipedia.org/edit.html?&L=0&no_cache=1&tx_detedit_pi1%5Bmode%5D=d&tx_detedit_pi1%5Btid%5D=" + url[-1]
-        print(url)
-        #print(url[-1])
-        # url = "http://www.musipedia.org/edit.html?&L=0&no_cache=1&tx_detedit_pi1%5Bmode%5D=d&tx_detedit_pi1%5Btid%5D=037a595e6f4f0576a9efe43154d71c18"
         req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
 
         links = set()

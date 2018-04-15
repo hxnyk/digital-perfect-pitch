@@ -20,7 +20,7 @@ def accum_accuracy(is_accurate, accuracy_count):
 def main():
     tester = MusicNote()
     
-    song = "jinglebells.wav"
+    song = "itsy_bitsy_spider.wav"
     print("\n\nPlaying " + song)
     note = tester.getMultipleNotes("melodies/" + song)
     print(note[0])
