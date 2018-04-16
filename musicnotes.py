@@ -16,11 +16,13 @@ from thinkdsp import Wave
 from thinkdsp import _SpectrumParent
 import wave
 import contextlib
+'''
 import zeep
+import peakutils
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 import pygame
-
+'''
 
 import thinkdsp
 
@@ -32,7 +34,7 @@ class MusicNote:
     MusicNote is a library that fetches the specific musical pitch
     given an audio file.
     """
-    NOTE_FILES = os.listdir("note_data/")
+    NOTE_FILES = os.listdir("wav_files/")
     NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
     music_data = {}
     note_values = {"C": 1, "D": 2, "E": 3, "F": 4, "G": 5, "A": 6, "B": 7}
@@ -44,7 +46,7 @@ class MusicNote:
     def __TrainData(self):
         """Train piano note data."""
         for fi in self.NOTE_FILES:
-            rate, data = wavfile.read('note_data/' + fi)
+            rate, data = wavfile.read('wav_files/' + fi)
             non_norm_freqs = []
             notes = []
             # .wav is a two channel audio file
@@ -60,8 +62,14 @@ class MusicNote:
             fft_freqs = numpy.fft.fftfreq(len(data.T[0]), 1 / rate)
             #find the frequency at the corresponding max y value (intensity)
             freq = fft_freqs[maximum_index]
-            self.music_data[fi[0].upper()] = freq
-        print (self.music_data)
+            key = ""
+            key = fi[0].upper()
+            if len(fi) > 5:
+                key += fi[1]
+                if len(fi) > 6:
+                    key += fi[2]
+                    
+            self.music_data[key] = freq
 
     def __Pitch(self, freq):
         """
@@ -90,12 +98,8 @@ class MusicNote:
             return "no"
 
     def CalculateOctave(self, note, difference): 
-        if note == 'A' or note == 'B': 
-            calculated_octave = 4 + difference
-        elif note == 'C' or note == 'D' or note == 'F' or note == 'G': 
-            calculated_octave = 5 + difference
-        else: 
-            calculated_octave = 6 + difference
+        
+        calculated_octave = 3 + difference
 
         return calculated_octave  
 
@@ -117,35 +121,32 @@ class MusicNote:
 
         #[note, freq, higher/lower octave, octave difference from training octave, calculated octave, accurate note]
         minimum = ["", math.inf, "", "", "", 0]
-        lower_octave = "no"
-        higher_octave = "no"
         accuracy_count = 0
         for note, training_freq in self.music_data.items():
             acc_note = self.GetAccNote(input_freq)
-            if input_freq >= training_freq - 10.0 and input_freq <= training_freq + 10.0: 
+            if input_freq >= training_freq - 7.0 and input_freq <= training_freq + 7.0: 
                 calc_octave = self.CalculateOctave(note, 0)  
                 minimum = [note, input_freq, "different", 0, calc_octave, acc_note]
-                break; 
+                return minimum
+
             elif input_freq < training_freq: 
                 #7 octaves on a piano
                 for multiplier in range(1, 8): 
                     new_training_freq = training_freq * (1 / (2 * multiplier))
-                    if input_freq >= new_training_freq - 10.0 and input_freq <= new_training_freq + 10.0 : 
-                        lower_octave = "yes"
+                    if input_freq >= new_training_freq - 7.0 and input_freq <= new_training_freq + 7.0 : 
                         calc_octave = self.CalculateOctave(note, (-1 * multiplier))
                         minimum = [note, input_freq, "lower", multiplier, calc_octave, acc_note]
-                        break; 
-
-            if lower_octave == "yes": 
-                break; 
+                        return minimum 
 
             else: 
                 for multiplier in range(1,8): 
                     new_training_freq = training_freq * (2 * multiplier)
-                    if input_freq >= new_training_freq - 10.0 and input_freq <= new_training_freq + 10.0: 
-                        higher_octave == "yes"
+                    if input_freq >= new_training_freq - 7.0 and input_freq <= new_training_freq + 7.0: 
+                        print (str(new_training_freq), note, str(training_freq), str(multiplier))
                         calc_octave = self.CalculateOctave(note, multiplier)
                         minimum = [note, input_freq, "higher", multiplier, calc_octave, acc_note]
+                        return minimum
+                           
 
         return minimum
 
@@ -194,7 +195,7 @@ class MusicNote:
             duration = interval
         
         return (detected_notes, parson_code)
-        
+    '''    
     def searchContours(self, parson_code):
         coll = "Musipedia"
         query = parson_code
@@ -285,4 +286,4 @@ class MusicNote:
             self.play_music(file_name)
         else:
             print("No midi available!\n\n")
-                        
+        '''                
