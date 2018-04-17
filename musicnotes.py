@@ -16,13 +16,12 @@ from thinkdsp import Wave
 from thinkdsp import _SpectrumParent
 import wave
 import contextlib
-'''
 import zeep
 import peakutils
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 import pygame
-'''
+
 
 import thinkdsp
 
@@ -167,8 +166,7 @@ class MusicNote:
         test_track = data.T[0]
         fft_track = fft(test_track)
 
-        #numNotes = len(peakutils.indexes(fft_track, thres=0.02/max(fft_track), min_dist=rate/2))
-        numNotes = 9
+        numNotes = len(peakutils.indexes(fft_track, thres=0.02/max(fft_track), min_dist=rate/2))
         piano = thinkdsp.read_wave(filename)
         interval = self.getDuration(filename) / float(numNotes)
 
@@ -183,19 +181,34 @@ class MusicNote:
             note_freq = (note, freq)
             detected_notes.append(note_freq)
 
-            if i > 0: 
-                if self.note_values[note[0]] > self.note_values[detected_notes[i - 1][0][0]]: 
+            if i > 0:
+                octave = ""
+                note_octave = ""
+                if len(detected_notes[i - 1][0]) == 3:
+                    octave = detected_notes[i - 1][0][2]
+                else:
+                    octave = detected_notes[i - 1][0][1]   
+                if len(note) == 3:   
+                    note_octave = note[2]
+                else:
+                    note_octave = note[1]         
+                if int(note_octave) > int(octave):
                     parson_code += 'U'
-                elif self.note_values[note[0]] < self.note_values[detected_notes[i - 1][0][0]]: 
+                elif int(note_octave) < int(octave):
                     parson_code += 'D'
-                else: 
-                    parson_code += 'R'
-
+                else:         
+                    if self.note_values[note[0]] > self.note_values[detected_notes[i - 1][0][0]]: 
+                        parson_code += 'U'
+                    elif self.note_values[note[0]] < self.note_values[detected_notes[i - 1][0][0]]: 
+                        parson_code += 'D'
+                    else: 
+                        parson_code += 'R'
+                
             start = start + duration
             duration = interval
         
         return (detected_notes, parson_code)
-    '''    
+  
     def searchContours(self, parson_code):
         coll = "Musipedia"
         query = parson_code
@@ -286,4 +299,4 @@ class MusicNote:
             self.play_music(file_name)
         else:
             print("No midi available!\n\n")
-        '''                
+                       

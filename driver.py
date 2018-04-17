@@ -20,7 +20,7 @@ def accum_accuracy(is_accurate, accuracy_count):
 def main():
     tester = MusicNote()
     
-    song = "itsy_bitsy_spider.wav"
+    song = "twinkletwinkle.wav"
     print("\n\nPlaying " + song)
     note = tester.getMultipleNotes("melodies/" + song)
     print(note[0])
@@ -61,8 +61,11 @@ def main():
     accuracy_count = accum_accuracy(tester.IsAccurate(note), accuracy_count)
 
     print (accuracy_count)
-    '''
     
+    print("Playing 'b' note")
+    note = tester.GetNote("B4.wav")
+    print_output(note)
+    '''
 
 if __name__ == "__main__":
     main()
