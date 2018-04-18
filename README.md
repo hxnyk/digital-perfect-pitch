@@ -7,7 +7,9 @@ It also has the code that interacts with the musipedia SOAP API that takes the c
 driver.py: Performs all of our 'experiments' associated with the functions in musicnotes.py :)
 
 training_notes/: Folder of 8 notes in 3rd octaves used as training data
+
 single_note_tests/: Files of single notes that we test our single note detection functionality with
+
 working_songs/: Songs we found are detected by our system, we use to perform more in depth tests on our system
 
 thinkdsp.py: 
