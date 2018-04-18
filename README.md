@@ -12,9 +12,4 @@ single_note_tests/: Files of single notes that we test our single note detection
 
 working_songs/: Songs we found are detected by our system, we use to perform more in depth tests on our system
 
-thinkdsp.py: 
-This file contains code used in "Think DSP",
-by Allen B. Downey, available from greenteapress.com
-
-Copyright 2013 Allen B. Downey
-License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
+thinkdsp.py: This file contains code used in "Think DSP", by Allen B. Downey, available from greenteapress.com; Copyright 2013 Allen B. Downey; License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
